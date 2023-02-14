@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pandas"
+version = "1.5.3"
+description = "pandas"
+authors = ["Nelly Nkonge <nkongenelly94@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+spark = "^0.2.1"
+pyspark = "3.1.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

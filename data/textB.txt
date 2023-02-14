@@ -1,0 +1,10 @@
+individual;marker;allele_result
+----------;------;-------------
+CEP_C14;rs48147398;C/C
+CEP_C13;rs4030303;A/A
+CEP_C14;rs23176965;G/G
+CEP_C1;rs92173768;T/T
+CEP_C15;r13328714;C/C
+CEP_C2;rs98216776;G/G
+CEP_C15;rs6683466;C/C
+CEP_C2;rs95622454;G/G
