@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "pandas"
-version = "1.5.3"
-description = "pandas"
+name = "uppsala-assignment"
+version = "0.1"
+description = "assignment"
 authors = ["Nelly Nkonge <nkongenelly94@gmail.com>"]
 readme = "README.md"
 
@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.10"
 spark = "^0.2.1"
 pyspark = "3.1.3"
+pandas = "1.5.3"
 
 
 [build-system]
