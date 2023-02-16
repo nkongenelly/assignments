@@ -5,7 +5,7 @@ on:
   #     - develop
   pull_request:
     branches:
-      - develop
+      - uppsala
   workflow_dispatch: # For testing
 concurrency:
   group: ${{ github.workflow }}
