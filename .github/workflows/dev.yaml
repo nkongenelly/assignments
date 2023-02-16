@@ -37,5 +37,5 @@ jobs:
         run: |
           pip install poetry;
           poetry run pip install pytest;
-          poetry run -m pytest;
+          poetry run pytest;
           poetry run coverage report;
