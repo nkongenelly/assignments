@@ -36,6 +36,8 @@ jobs:
       - name: Run unit tests with coverage
         run: |
           pip install poetry;
+          poetry run pip install jsonschema;
+          poetry run pip install mock;
           poetry run pip install pytest;
           poetry run pytest;
           poetry run coverage report;
