@@ -1,5 +1,8 @@
-from main import Main
+from src.main import Main
 from pyspark.sql.types import *
+from utils.payload_validation_schema import payload_config_schema
+from jsonschema import validate, ValidationError
+from utils.error_handling import ErrorHandling
 
 payload = {
     "reference":{
@@ -18,8 +21,17 @@ payload = {
     "schema": [\
         StructField("individual", StringType(), True),\
         StructField("marker", StringType(), True),\
-        StructField("allele_result", StringType(), True)]
+        StructField("allele_result", StringType(), True)],
+    "tolerance_score": 100
 }
 
-obj = Main(payload)
-obj.process_data()
+
+# validate the payload
+try:
+    validate(payload, payload_config_schema)
+
+    obj = Main(payload)
+    obj.process_data()
+except ValidationError as e:
+    error_obj = ErrorHandling('PAYLOAD_CONFIG', 'NOTICE')
+    error_obj.print_error(e.message)
