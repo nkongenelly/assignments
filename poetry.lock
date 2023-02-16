@@ -107,6 +107,7 @@ python-versions = ">=3.8"
 
 [package.dependencies]
 numpy = [
+    {version = ">=1.20.3", markers = "python_version < \"3.10\""},
     {version = ">=1.21.0", markers = "python_version >= \"3.10\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
 ]
@@ -225,8 +226,8 @@ python-versions = ">=3.7"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.10"
-content-hash = "5a2452196e29ca6fb82c12923228960d00688a55ecf6189e4be88b616edbb33a"
+python-versions = "^3.9.16"
+content-hash = "69e5f326e73d72ced0454e20f974917c2603581c9059cacec8a770a4c992e487"
 
 [metadata.files]
 attrs = [
