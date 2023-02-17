@@ -28,7 +28,7 @@ payload = {
         StructField("individual", StringType(), True),\
         StructField("marker", StringType(), True),\
         StructField("allele_result", StringType(), True)],
-    "error_margin": 90
+    "error_margin": 0
 }
 
 try:

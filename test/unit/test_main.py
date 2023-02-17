@@ -16,7 +16,7 @@ def test_process_data(spark_session):
         main_obj = Main(payload)
 
         result = main_obj.process_data()
-        assert result == 605
+        assert result == 600
         assert type(result) == int
         
 def test_process_data_with_folder(spark_session):

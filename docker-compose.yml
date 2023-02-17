@@ -1,0 +1,14 @@
+version: '3'
+services:
+  my_component:
+    env_file: .env
+    container_name: uppsala
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment: # specify the env-variables here
+      # secret ones in .env file or system
+      SLACK_WEBHOOK: ${SLACK_WEBHOOK}
+      # sometimes the console won't show print messages,
+      # using PYTHONUNBUFFERED: 1 can fix this
+      PYTHONUNBUFFERED: 1
