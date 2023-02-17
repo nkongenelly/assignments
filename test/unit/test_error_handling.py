@@ -1,5 +1,5 @@
 import pytest
-from utils.error_handling import ErrorHandling
+from src.utils.error_handling import ErrorHandling
 
 def test_error_handling():
     error_type = 'PAYLOAD_CONFIG'
@@ -14,7 +14,7 @@ def test_error_handling_without_message():
     error_type = 'PAYLOAD_CONFIG'
     error_category = 'NOTICE'
     
-    with pytest.raises(Exception) as context:
+    with pytest.raises(Exception):
         error_obj.print_error()
     
     

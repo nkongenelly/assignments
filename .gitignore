@@ -1,3 +1,7 @@
 venv/*
 
 .env*
+
+data/results/output/*.crc
+test/data/results/output/*.crc
+
