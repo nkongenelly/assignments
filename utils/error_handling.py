@@ -1,3 +1,6 @@
+from .slack_notification import send_slack_message
+import os
+
 class ErrorHandling:
     def __init__(self, type, category):
         self.type = type
@@ -8,6 +11,8 @@ class ErrorHandling:
         print(f'{self.type} - {error}')
         return f'{self.type} - {error}'
         
-    def send_slack_notification(self):
+    def send_slack_notification(self, payload):
         # send slack notification
-        print('to be done')
+        webhook = os.environ.get("SLACK_WEBHOOK")
+
+        send_slack_message(payload, webhook)

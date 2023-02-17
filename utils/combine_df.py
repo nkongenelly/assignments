@@ -1,13 +1,15 @@
 def combine_df(file_location, table_name, header, delimiter,schema,spark):
     file_locations = {}
     for index,location in enumerate(file_location):
-        print(location)
-        file_locations[f'df{index+1}'] = spark.read.format("csv").option("header",header).option("delimiter",delimiter).schema(schema).load(location)
+        if schema == None:
+            file_locations[f'df{index+1}'] = spark.read.format("csv").option("header",header).option("delimiter",delimiter).option("mode", "DROPMALFORMED").load(location)
+        else:
+            file_locations[f'df{index+1}'] = spark.read.format("csv").option("header",header).option("delimiter",delimiter).option("mode", "DROPMALFORMED").schema(schema).load(location)
         
         # create tables
         file_locations[f'df{index+1}'].createOrReplaceTempView(f"table{index+1}")
     
-    print(len(file_locations))
+
     count = 0
     query = ''
     while count < len(file_locations):
@@ -21,7 +23,6 @@ def combine_df(file_location, table_name, header, delimiter,schema,spark):
     print(query)
     df_reference = spark.sql(query)
     df_reference.createOrReplaceTempView(table_name)
-    df_reference.show()
     
     return df_reference
 

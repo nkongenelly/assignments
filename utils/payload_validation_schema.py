@@ -78,5 +78,11 @@ payload_config_schema = {
         "type": "schema given is not an array",
       },
     },
+    "tolerance_score": {
+      "type": "integer",
+      "message": {
+        "type": "tolerance_score given is not an integer",
+      },
+    }
   },
 };
