@@ -1,14 +1,16 @@
 import pandas as pd
 import pyspark
+import glob
 from pyspark.sql import SparkSession
 from pyspark.context import SparkContext
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from datetime import  date, timedelta, datetime
 import time
-from utils.combine_df import combine_df
+from src.utils.combine_df import combine_df
 import json 
-from utils.error_handling import ErrorHandling 
+from src.utils.error_handling import ErrorHandling 
+import os
 
 class Main:
     def __init__(self, payload):
@@ -18,18 +20,27 @@ class Main:
         self.hadoop_conf = self.spark.sparkContext._jsc.hadoopConfiguration()
         
         self.schema = StructType(self.payload['schema']) if 'schema' in self.payload else None
-        self.default_tolerance = 100
+        self.default_error_margin = 100
 
-        self.reference_location = self.payload.get('reference').get('location')
-        self.reference_header = self.payload.get('reference').get('header')
-        self.reference_delimiter = self.payload.get('reference').get('delimiter')
+        reference = self.payload.get('reference')
+        self.reference_location = reference.get('location') if reference.get('folder', False) == False else glob.glob(f'{reference.get("location")[0]}*')
+        self.reference_type = reference.get('type') if 'type' in reference else self.get_file_type('reference')
+        self.reference_header = reference.get('header')
+        self.reference_delimiter = reference.get('delimiter')
         
-        self.lab_location = self.payload.get('lab').get('location')
-        self.lab_header = self.payload.get('lab').get('header')
-        self.lab_delimiter = self.payload.get('lab').get('delimiter')
+        lab = self.payload.get('lab')
+        self.lab_location = lab.get('location') if lab.get('folder', False) == False else glob.glob(f'{lab.get("location")[0]}*')
+        self.lab_type = lab.get('type') if 'type' in lab else self.get_file_type('lab')
+        self.lab_header = lab.get('header')
+        self.lab_delimiter = lab.get('delimiter')
+        
+        results = self.payload.get('results')
+        self.results_location = results.get('location')[0]
+        self.results_type = results.get('type')
+        self.results_name = results.get('name')
+            
 
     def process_data(self):
-        
         # create dataframe for combined lab files
         df_lab = combine_df(file_location=self.lab_location, table_name="table_lab", header=self.lab_header, delimiter=self.lab_delimiter, schema=self.schema, spark=self.spark)
         
@@ -49,32 +60,38 @@ class Main:
         query_count_labs = "SELECT COUNT(*) FROM table_lab"
         
         df_count = self.spark.sql(query_count)
-        df_markers = self.spark.sql(query_markers)
+        self.df_markers = self.spark.sql(query_markers)
         df_count_labs = self.spark.sql(query_count_labs)
 
-        faulty_result_count = self.assess_tolerance(df_count, df_count_labs)
+        self.faulty_result_count = self.assess_error_margin(df_count, df_count_labs)
         
-        
-        return faulty_result_count
+        # write results to output folder if given 
+        self.write_results_to_file()
     
-    def assess_tolerance(self, df_count, df_count_labs):
+        return self.faulty_result_count
+    
+    def get_file_type(self, type):
+        sample_file = self.reference_location[0]
+        file_type = sample_file.split(".")[-1]
+        return file_type
+        
+    def assess_error_margin(self, df_count, df_count_labs):
         # getting list of rows using collect()
         count_labs_rows, count_faulty  = self.get_counts_of_failed_and_total_for_lab_files(df_count, df_count_labs)
         
-        success_percent = (count_faulty/ count_labs_rows) * 100 
-        print(f'type....{type(success_percent)}')       
-        tolerance = self.payload.get('tolerance_score', self.default_tolerance)
+        error_percent = (count_faulty/ count_labs_rows) * 100     
+        error_margin = self.payload.get('error_margin', self.default_error_margin)
 
         
-        if success_percent < tolerance:
-            error_obj = ErrorHandling('TOLERANCE TOO LOW', 'NOTICE')
+        if error_percent > error_margin:
+            error_obj = ErrorHandling('error_margin TOO HIGH', 'NOTICE')
             
-            payload = {"text": f"The files success is {success_percent}% which is lower than the given {tolerance}%"}
+            payload = {"text": f"The error_margin calculated is {error_percent}% which is higher than the given {error_margin}%"}
             error_obj.send_slack_notification(payload)
             
+            
         return count_faulty
-        
-        
+            
     def get_counts_of_failed_and_total_for_lab_files(self, df_count, df_count_labs):
         row_list_count = df_count.collect()
         row_list_count_labs = df_count_labs.collect()
@@ -84,4 +101,21 @@ class Main:
         
         return {count_faulty, count_labs_rows}
         
+    def write_results_to_file(self):
+        # add faulty allele_results in df
+        count_of_allele = [
+            [f'{self.faulty_result_count} faulty allele_results'],
+            ['----------------------------------------'],
+            ['markers'], 
+            ['----------------------------------------']
+        ]
+        count_of_allele_df = self.spark.createDataFrame(count_of_allele)
+        df_output =count_of_allele_df.union(self.df_markers)
 
+        # write results to output folder if given
+        df_output.coalesce(1).write.format("text").option("header", "true").option("encoding", "UTF-8").mode("overwrite").save(f'{self.results_location}')
+        
+        # rename partition file to given name if provided
+        src_path = f'{self.results_location}*.{self.results_type}'
+        dest_path = f'{self.results_location}{self.results_name}.{self.results_type}'
+        os.rename((glob.glob(src_path))[0], dest_path) 

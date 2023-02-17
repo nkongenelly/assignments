@@ -1,18 +1,17 @@
 import pytest
 from mock import patch
 from pyspark.sql import SparkSession
-from utils.combine_df import combine_df
+from src.utils.combine_df import combine_df
 from pyspark.sql.types import *
 from pyspark.sql import DataFrame
+from data.test_payload import payload as payload
 
-file_location = ["data/HapMap_r23a_CEP_C1_AllSNPs.txt","data/HapMap_r23a_CEP_C2_AllSNPs.txt","data/HapMap_r23a_CEP_C13_AllSNPs.txt","data/HapMap_r23a_CEP_C14_AllSNPs.txt","data/HapMap_r23a_CEP_C15_AllSNPs.txt","data/HapMap_r23a_CEP_C16_AllSNPs.txt"]
+reference = payload.get('reference')
+file_location = reference.get('location')
 table_name = 'table_reference'
-header = False 
-delimiter = "\t"
-schema = StructType([\
-        StructField("individual", StringType(), True),\
-        StructField("marker", StringType(), True),\
-        StructField("allele_result", StringType(), True)])
+header = reference.get('header') 
+delimiter = reference.get('delimiter')
+schema = StructType(reference.get('schema', None))
 
 @pytest.fixture(scope="session")
 def spark_session():
@@ -20,8 +19,5 @@ def spark_session():
 
 
 def test_combine_df(spark_session):
-    # with patch('utils.main.Main.process_data', return_value=DataFrame[individual: string, marker: string, allele_result: string]):
     result = combine_df(file_location, table_name, header, delimiter,schema,spark_session)
     assert(isinstance(result, DataFrame))
-    # assert True
-    # AssertionError: assert DataFrame[individual: string, marker: string, allele_result: string] == 'DataFrame[individual: string, marker: string, allele_result: string]'
