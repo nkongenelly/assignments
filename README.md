@@ -11,3 +11,9 @@
 > poetry shell
 
 > poetry install
+
+# To run using Docker, run the following commands;
+
+> docker build -t uppsala .
+
+> docker compose up
